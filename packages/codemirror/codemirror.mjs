@@ -22,6 +22,7 @@ import { highlightMiniLocations, isPatternHighlightingEnabled, updateMiniLocatio
 import { keybindings } from './keybindings.mjs';
 import { initTheme, activateTheme, theme } from './themes.mjs';
 import { sliderPlugin, updateSliderWidgets } from './slider.mjs';
+import { canvasPlugin, updateCanvasWidgets } from './canvas.mjs';
 import { widgetPlugin, updateWidgets } from './widget.mjs';
 import { persistentAtom } from '@nanostores/persistent';
 
@@ -77,6 +78,7 @@ export function initEditor({ initialCode = '', onChange, onEvaluate, onStop, roo
       ...initialSettings,
       javascript(),
       sliderPlugin,
+      canvasPlugin,
       widgetPlugin,
       // indentOnInput(), // works without. already brought with javascript extension?
       // bracketMatching(), // does not do anything
@@ -187,8 +189,10 @@ export class StrudelMirror {
         this.widgets = options.meta?.widgets;
         const sliders = this.widgets.filter((w) => w.type === 'slider');
         updateSliderWidgets(this.editor, sliders);
-        const widgets = this.widgets.filter((w) => w.type !== 'slider');
+        const widgets = this.widgets.filter((w) => w.type !== 'slider' && w.type !== 'canvas');
         updateWidgets(this.editor, widgets);
+        const canvases = this.widgets.filter((w) => w.type === 'canvas');
+        updateCanvasWidgets(this.editor, canvases);
         updateMiniLocations(this.editor, this.miniLocations);
         replOptions?.afterEval?.(options);
         // if no painters are set (.onPaint was not called), then we only need the present moment (for highlighting)

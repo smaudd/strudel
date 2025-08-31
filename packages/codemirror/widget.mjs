@@ -140,3 +140,11 @@ registerWidget('_spectrum', (id, options = {}, pat) => {
   const ctx = getCanvasWidget(id, options).getContext('2d');
   return pat.spectrum({ ...options, ctx, id });
 });
+
+registerWidget('_canvas', (id, options = {}, pat) => {
+  let _size = options.size || 200;
+  options = { width: _size, height: _size, ...options, size: _size / 5 };
+  const ctx = getCanvasWidget(id, options).getContext('2d');
+  console.log('on canvas!');
+  return ctx;
+});

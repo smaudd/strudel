@@ -62,6 +62,19 @@ export function transpiler(input, options = {}) {
           });
         return this.replace(sliderWithLocation(node));
       }
+      if (isCanvasFunction(node)) {
+        emitWidgets &&
+          widgets.push({
+            from: node.arguments[0].start,
+            to: node.arguments[0].end,
+            value: node.arguments[0].raw, // don't use value!
+            min: node.arguments[1]?.value ?? 0,
+            max: node.arguments[2]?.value ?? 1,
+            step: node.arguments[3]?.value,
+            type: 'canvas',
+          });
+        return this.replace(canvasWithLocation(node));
+      }
       if (isWidgetMethod(node)) {
         const type = node.callee.property.name;
         const index = widgets.filter((w) => w.type === type).length;
@@ -140,6 +153,10 @@ function isSliderFunction(node) {
   return node.type === 'CallExpression' && node.callee.name === 'slider';
 }
 
+function isCanvasFunction(node) {
+  return node.type === 'CallExpression' && node.callee.name === 'canvas';
+}
+
 function isWidgetMethod(node) {
   return node.type === 'CallExpression' && widgetMethods.includes(node.callee.property?.name);
 }
@@ -154,6 +171,19 @@ function sliderWithLocation(node) {
     raw: id,
   });
   node.callee.name = 'sliderWithID';
+  return node;
+}
+
+function canvasWithLocation(node) {
+  const id = 'canvas_' + node.arguments[0].start; // use loc of first arg for id
+  // add loc as identifier to first argument
+  // the canvasWithID function is assumed to be canvasWithID(id, value, min?, max?)
+  node.arguments.unshift({
+    type: 'Literal',
+    value: id,
+    raw: id,
+  });
+  node.callee.name = 'canvasWithID';
   return node;
 }
 
